@@ -1,0 +1,8 @@
+---
+
+- name: Debug node_exporter_daemon_config_merged
+  when:
+    - node_exporter_debug
+    - node_exporter_daemon_config_merged is defined
+  ansible.builtin.debug:
+    msg: "node_exporter_daemon_config_merged: {{ node_exporter_daemon_config_merged }}"

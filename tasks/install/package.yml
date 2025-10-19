@@ -1,0 +1,23 @@
+---
+
+- name: Install package tasks
+  when: node_exporter_install_source == 'package' 
+  become: true
+  tags:
+    - node_exporter_install
+    - node_exporter
+  block:
+    - name: Install node_exporter package
+      when: ansible_os_family == 'Debian'
+      ansible.builtin.apt:
+        name: ["{{ item }}"]
+        update_cache: true
+        state: "{{ node_exporter_package_ensure }}"
+      with_items: "{{ node_exporter_package_name }}"
+
+    - name: Install node_exporter package
+      when: ansible_os_family == 'RedHat'
+      ansible.builtin.yum:
+        name: ["{{ item }}"]
+        state: "{{ node_exporter_package_ensure }}"
+      with_items: "{{ node_exporter_package_name }}"

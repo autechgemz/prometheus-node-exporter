@@ -1,0 +1,22 @@
+---
+
+- name: Debug merged config
+  when:
+    - node_exporter_debug | bool
+    - node_exporter_systemd_default_parsed is defined
+  ansible.builtin.debug:
+    msg: "node_exporter_systemd_default_parsed: {{ node_exporter_systemd_default_parsed }}"
+
+- name: Ensure the node_exporter_systemd_options is a dictionary
+  ansible.builtin.assert:
+    that:
+      - node_exporter_systemd_options is mapping
+    fail_msg: "node_exporter_systemd_options must be a dictionary."
+    quiet: true
+
+- name: Debug merged config
+  when:
+    - node_exporter_debug | bool
+    - node_exporter_systemd_options_merged is defined
+  ansible.builtin.debug:
+    msg: "node_exporter_systemd_options_merged: {{ node_exporter_systemd_options_merged }}"

@@ -1,0 +1,16 @@
+# {{ ansible_managed }}
+{% if node_exporter_systemd_options_merged is not mapping -%} 
+{{ __not_defined__ | mandatory(
+  'node_exporter_systemd_options_merged must be a mapping, got ' ~ (node_exporter_systemd_options_merged | type_debug)
+) }}
+{%- endif %}
+{% for keys, values in node_exporter_systemd_options_merged.items() %}
+{%   if not values %}
+{{ '[' }}{{ keys }}{{ ']' }}
+{%   else %}
+{{ '[' }}{{ keys }}{{ ']' }}
+{%     for key, value in values.items() %}
+{{ key }} = {{ value }}
+{%     endfor %}
+{%   endif %}
+{% endfor %}

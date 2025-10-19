@@ -1,0 +1,51 @@
+---
+
+- name: Install binary tasks
+  when: node_exporter_install_source == 'binary' 
+  become: true
+  tags:
+    - node_exporter_install
+    - node_exporter
+  block:
+
+    - name: Create node_exporter install directory
+      ansible.builtin.file:
+        path: "{{ node_exporter_install_prefix }}/node_exporter"
+        owner: root
+        group: root
+        mode: "0755"
+        state: directory
+
+    - name: Check node_exporter install status
+      ansible.builtin.stat:
+        path: "{{ node_exporter_install_prefix }}/node_exporter/node_exporter"
+      register: node_exporter_stat
+
+    - name: Download node_exporter archive 
+      when:
+        - not node_exporter_stat.stat.exists
+        - not ansible_check_mode
+      block:
+        - name: Debug download URL
+          when: node_exporter_debug | bool
+          ansible.builtin.debug:
+            msg: "Downloading node_exporter from {{ node_exporter_install_url }}"
+        - name: Download node_exporter archive 
+          ansible.builtin.get_url:
+            url: "{{ node_exporter_install_url }}" 
+            dest: "/tmp/node_exporter.tar.gz"
+            mode: "0644"
+        - name: Extract node_exporter archive
+          ansible.builtin.unarchive:
+            src: "/tmp/node_exporter.tar.gz"
+            dest: "{{ node_exporter_install_prefix }}" 
+            remote_src: true
+            extra_opts: 
+              - "-C"
+              - "{{ node_exporter_install_prefix }}/node_exporter"
+              - --strip-components=1
+
+    - name: Remove node_exporter archive 
+      ansible.builtin.file:
+        path: "/tmp/node_exporter.tar.gz"
+        state: absent

@@ -1,0 +1,19 @@
+---
+
+- name: Validate node_exporter_install_source
+  ansible.builtin.assert:
+    that:
+      - node_exporter_install_source is defined
+      - node_exporter_install_source in ['package', 'binary']
+    fail_msg: >-
+      node_exporter_install_source must be 'package' or 'binary'
+      (got: {{ node_exporter_install_source | default('<undefined>') }})
+    quiet: true
+
+- name: Install package tasks
+  when: node_exporter_install_source == 'package'
+  ansible.builtin.import_tasks: install/package.yml
+
+- name: Install binary tasks
+  when: node_exporter_install_source == 'binary'
+  ansible.builtin.import_tasks: install/binary.yml

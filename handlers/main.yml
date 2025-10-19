@@ -1,0 +1,21 @@
+---
+
+- name: Reload systemd daemon
+  when: not ansible_check_mode
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart node-exporter
+  when: not ansible_check_mode
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ node_exporter_service_name }}"
+    state: restarted
+
+- name: Reload node-exporter
+  when: not ansible_check_mode
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ node_exporter_service_name }}"
+    state: reloaded

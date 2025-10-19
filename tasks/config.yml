@@ -1,0 +1,66 @@
+---
+
+- name: Config tasks
+  become: true
+  tags:
+    - node_exporter_config
+    - node_exporter
+  block:
+
+    - name: Merge node_exporter daemon flags
+      ansible.builtin.set_fact:
+        node_exporter_daemon_config_flags: "{{ (node_exporter_daemon_config_flags | default({})) | combine({ (item.split('=')[0]): item }) }}"
+      loop: "{{ node_exporter_daemon_config_default + node_exporter_daemon_config_options }}"
+
+    - name: Set node_exporter configuration facts
+      ansible.builtin.set_fact:
+        node_exporter_daemon_config_merged: "{{ node_exporter_daemon_config_flags.values() | list | unique }}"
+      when: (node_exporter_daemon_config_flags is defined and node_exporter_daemon_config_flags | length > 0)
+
+    - name: Debug variables
+      when: node_exporter_debug | bool
+      ansible.builtin.include_tasks: debug/config.yml
+
+    - name: Ensure node_exporter group exist
+      when: node_exporter_install_source == 'binary'
+      ansible.builtin.group:
+        name: "{{ node_exporter_group }}"
+        state: present
+
+    - name: Ensure node_exporter user exists
+      when: node_exporter_install_source == 'binary'
+      ansible.builtin.user:
+        name: "{{ node_exporter_user }}"
+        group: "{{ node_exporter_group }}"
+        system: true
+        create_home: false
+        home: "{{ node_exporter_data_dir }}"
+        shell: /sbin/nologin
+
+    - name: Create node_exporter config directory
+      when: node_exporter_install_source == 'binary'
+      ansible.builtin.file:
+        path: "{{ node_exporter_config_dir }}"
+        owner: root
+        group: root
+        mode: "0755" 
+        state: directory
+
+    - name: Manage node_exporter daemon options
+      when: (node_exporter_daemon_config_merged | default([]) | length) > 0
+      ansible.builtin.template:
+        src: node-exporter.daemon.j2
+        dest: "{{ node_exporter_daemon_config_file }}"
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart node-exporter
+
+    - name: Create node_exporter data directory
+      when: node_exporter_install_source == 'binary'
+      ansible.builtin.file: 
+        path: "{{ node_exporter_data_dir }}"
+        owner: "{{ node_exporter_user }}"
+        group: "{{ node_exporter_group }}"
+        mode: "0755"
+        state: directory

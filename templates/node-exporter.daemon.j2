@@ -1,0 +1,4 @@
+# {{ ansible_managed }}
+{% if node_exporter_daemon_config_merged is defined and node_exporter_daemon_config_merged is iterable %}
+ARGS={{ '"' }}{{ node_exporter_daemon_config_merged | join(" \\\n") }}{{ '"' }}
+{% endif %}

@@ -1,0 +1,31 @@
+---
+
+node_exporter_package_name:
+  - golang-github-prometheus-node-exporter
+
+node_exporter_service_name: prometheus-node-exporter.service
+
+node_exporter_daemon_config_file: '/etc/default/prometheus-node-exporter'
+
+node_exporter_daemon_config_default: []
+
+node_exporter_data_dir: '/var/lib/prometheus/node-exporter'
+
+node_exporter_user: prometheus
+
+node_exporter_group: prometheus
+
+node_exporter_systemd_default: |
+  Unit:
+    Description: Prometheus exporter for machine metrics
+    Documentation: https://github.com/prometheus/node_exporter
+  Service:
+    Restart: on-failure
+    User: prometheus
+    EnvironmentFile: /etc/default/prometheus-node-exporter
+    ExecStart: /usr/bin/prometheus-node-exporter $ARGS
+    ExecReload: /bin/kill -HUP $MAINPID
+    TimeoutStopSec: 20s
+    SendSIGKILL: 'no'
+  Install:
+    WantedBy: multi-user.target
