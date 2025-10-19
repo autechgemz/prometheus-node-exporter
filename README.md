@@ -16,7 +16,6 @@ None
 
 - AlmaLinux 8 or higher
 - RockyLinux 8 or higher
-- Ubuntu 24.04 or higher
 
 ## Example Playbook
 
